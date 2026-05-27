@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="">
+        <file>icons/1.svg</file>
+        <file>icons/2.svg</file>
+        <file>icons/3.svg</file>
+        <file>icons/21.svg</file>
+        <file>icons/22.svg</file>
+        <file>icons/31.svg</file>
+        <file>icons/63.svg</file>
+    </qresource>
+</RCC>

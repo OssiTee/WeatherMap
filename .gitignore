@@ -1,0 +1,23 @@
+# CMake build directories
+build/
+build-*/
+out/
+
+# Binaries
+bin/
+*.exe
+*.out
+
+# CMake deps
+_deps/
+
+# Qt Creator / VSCode / CLion
+*.user
+*.user.*
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+

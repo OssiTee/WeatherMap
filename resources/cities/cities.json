@@ -1,0 +1,15 @@
+{
+  "cities": [
+    { "name": "Helsinki",      "lat": 60.1699, "lon": 24.9384 },
+    { "name": "Oulu",          "lat": 65.0121, "lon": 25.4651 },
+    { "name": "Muurame",       "lat": 62.1242, "lon": 25.6700 },
+    { "name": "Kokkola",       "lat": 63.8385, "lon": 23.1307 },
+    { "name": "Kajaani",       "lat": 64.2273, "lon": 27.7285 },
+    { "name": "Sodankylä",     "lat": 67.4167, "lon": 26.6000 },
+    { "name": "Joensuu",       "lat": 62.6010, "lon": 29.7636 },
+    { "name": "Kuusamo",       "lat": 65.9648, "lon": 29.1888 },    
+    { "name": "Pori",          "lat": 61.4851, "lon": 21.7970 },
+    { "name": "Inari",         "lat": 68.9060, "lon": 27.0288 }
+  ]
+}
+

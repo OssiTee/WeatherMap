@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="">
+        <file>map/fin.geojson</file>
+    </qresource>
+</RCC>

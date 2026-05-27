@@ -1,0 +1,22 @@
+find_package(Qt6 REQUIRED COMPONENTS Core Concurrent)
+
+qt_add_library(viewmodel STATIC
+    weather/WeatherDataViewModel.cpp
+    city/CityLabelsViewModel.cpp
+    map/MapLoaderViewModel.cpp
+
+    ${CMAKE_SOURCE_DIR}/include/viewmodel/weather/WeatherDataViewModel.h
+    ${CMAKE_SOURCE_DIR}/include/viewmodel/city/CityLabelsViewModel.h
+    ${CMAKE_SOURCE_DIR}/include/viewmodel/map/MapLoaderViewModel.h
+)
+
+target_include_directories(viewmodel PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(viewmodel PUBLIC
+    Qt6::Core
+    Qt6::Concurrent
+    spdlog::spdlog
+    domain
+)

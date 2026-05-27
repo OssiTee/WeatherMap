@@ -1,0 +1,46 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=all \
+            --inconclusive \
+            --std=c++20 \
+            --force \
+            --inline-suppr \
+            --suppress=missingIncludeSystem \
+            --suppress=missingInclude \
+            --suppress=unknownMacro \
+            --suppress=unmatchedSuppression \
+            -i build \
+            -i build-ci \
+            -i build-release \
+            -i CMakeFiles \
+            -i */autogen/* \
+            -I include \
+            -I include/data \
+            -I include/domain \
+            -I include/shared \
+            -I include/viewmodel \
+            -I include/view \
+            .

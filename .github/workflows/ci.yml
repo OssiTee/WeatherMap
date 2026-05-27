@@ -1,0 +1,48 @@
+name: C++ Qt6 CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          build-essential \
+          libgl1-mesa-dev \
+          xorg-dev \
+          libxcb-cursor0 \
+          libxcb-xinerama0 \
+          libxcb-xinput0 \
+          libxkbcommon-x11-0 \
+          xvfb
+
+    - name: Install Qt6
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3'
+        host: 'linux'
+        target: 'desktop'
+        arch: 'gcc_64'
+        modules: 'qtcharts qtimageformats'
+
+    - name: Configure CMake
+      run: cmake --preset ci
+
+    - name: Build Project
+      run: cmake --build --preset ci
+
+    - name: Run Tests (with virtual display)
+      run: xvfb-run -a ctest --preset ci
