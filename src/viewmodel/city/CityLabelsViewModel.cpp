@@ -40,8 +40,8 @@ namespace viewmodel {
 
         const auto &cities = cityResult.value();
 
-        auto labels = std::make_shared<std::vector<CityLabelItem>>();
-        labels->reserve(cities.size());
+        auto cityLabels = std::make_shared<std::vector<CityLabelItem>>();
+        cityLabels->reserve(cities.size());
 
         for (const auto &c : cities) {
             CityLabelItem item;
@@ -49,11 +49,11 @@ namespace viewmodel {
             item.x = c.xNorm;
             item.y = c.yNorm;
 
-            labels->push_back(std::move(item));
+            cityLabels->push_back(std::move(item));
         }
 
-        m_labels = labels;
-        emit labelsReady(std::move(labels));
+        m_labels = cityLabels;
+        emit labelsReady(std::move(cityLabels));
     }
 
 } // namespace viewmodel

@@ -41,7 +41,7 @@ namespace domain {
         out.reserve(raw.size());
 
         // 3) Convert + normalize
-        for (auto &p : raw) {
+        for (const auto &p : raw) {
 
             // Skip points outside bounding box
             if (p.latitude < box.minLat || p.latitude > box.maxLat ||
