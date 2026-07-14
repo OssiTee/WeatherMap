@@ -25,6 +25,8 @@ namespace data {
      */
     class NetworkClient {
       public:
+        virtual ~NetworkClient() = default;
+
         /**
          * @brief Performs a blocking HTTP GET request.
          *
@@ -35,7 +37,7 @@ namespace data {
          * @param url Fully qualified URL to fetch.
          * @return QByteArray containing the response body, or empty on error.
          */
-        QByteArray get(const QString &url) const;
+        virtual QByteArray get(const QString &url) const;
     };
 
 } // namespace data

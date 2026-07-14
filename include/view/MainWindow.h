@@ -1,8 +1,10 @@
 #pragma once
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QTimer>
 #include <QWidget>
 
 #include <memory>
@@ -10,6 +12,7 @@
 #include "MapWidget.h"
 #include "shared/BoundingBox.h"
 #include "viewmodel/city/CityLabelsViewModel.h"
+#include "viewmodel/cloud/CloudOverlayViewModel.h"
 #include "viewmodel/map/MapLoaderViewModel.h"
 #include "viewmodel/weather/WeatherDataViewModel.h"
 
@@ -34,12 +37,15 @@ namespace view {
          *
          * @param mapLoaderVM   ViewModel responsible for loading map geometry.
          * @param cityLabelsVM  ViewModel responsible for producing city labels.
+         * @param cloudOverlayVM ViewModel responsible for cloud coverage
+         *                       overlay.
          * @param weatherVM     ViewModel responsible for loading weather data.
          * @param parent        Optional parent widget.
          */
         explicit MainWindow(
             std::unique_ptr<viewmodel::MapLoaderViewModel> mapLoaderVM,
             std::unique_ptr<viewmodel::CityLabelsViewModel> cityLabelsVM,
+            std::unique_ptr<viewmodel::CloudOverlayViewModel> cloudOverlayVM,
             std::unique_ptr<viewmodel::WeatherDataViewModel> weatherVM,
             QWidget *parent = nullptr);
 
@@ -60,6 +66,8 @@ namespace view {
         void setBoundingBox(const shared::BoundingBox &box);
 
       private:
+        void refreshWeatherDataImpl(bool forceOverlayRefresh);
+
         /**
          * @brief Builds the toolbar panel and its UI controls.
          *
@@ -91,6 +99,7 @@ namespace view {
         // --- ViewModels ---
         std::unique_ptr<viewmodel::MapLoaderViewModel> m_mapLoaderVM;
         std::unique_ptr<viewmodel::CityLabelsViewModel> m_cityLabelsVM;
+        std::unique_ptr<viewmodel::CloudOverlayViewModel> m_cloudOverlayVM;
         std::unique_ptr<viewmodel::WeatherDataViewModel> m_weatherVM;
 
         // --- UI ---
@@ -100,8 +109,11 @@ namespace view {
         // Toolbar controls
         QComboBox *m_unitCombo = nullptr;
         QComboBox *m_horizonCombo = nullptr;
+        QCheckBox *m_cloudLayerCheck = nullptr;
         QLabel *m_lastUpdatedLabel = nullptr;
         QPushButton *m_refreshButton = nullptr;
+
+        QTimer m_autoRefreshTimer;
     };
 
 } // namespace view

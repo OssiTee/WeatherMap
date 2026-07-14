@@ -3,6 +3,7 @@ add_library(data
     weather/NetworkClient.cpp
     weather/FmiXmlParser.cpp
     weather/WeatherCache.cpp
+    cloud/CloudCoverageRepository.cpp
     city/CityLoader.cpp
     map/GeoJsonFileProvider.cpp
 )

@@ -5,8 +5,7 @@
 
 namespace viewmodel {
 
-    // Construct the weather ViewModel, register async signal types, and
-    // start automatic refresh timer.
+    // Construct the weather ViewModel and register async signal types.
     WeatherDataViewModel::WeatherDataViewModel(
         std::unique_ptr<domain::IWeatherService> service)
         : m_service(std::move(service)) {
@@ -16,19 +15,10 @@ namespace viewmodel {
         qRegisterMetaType<std::shared_ptr<const std::vector<WeatherPointItem>>>(
             "std::shared_ptr<const std::vector<viewmodel::WeatherPointItem>>");
 
-        // Automatically refresh weather data every 10 minutes
-        connect(&m_refreshTimer, &QTimer::timeout, this, [this]() {
-            if (m_hasBBox) {
-                load(m_lastHorizon);
-            }
-        });
-
         connect(&m_weatherFutureWatcher,
                 &QFutureWatcher<
                     std::vector<domain::NormalizedWeatherPoint>>::finished,
                 this, &WeatherDataViewModel::onWeatherFetchFinished);
-
-        m_refreshTimer.start(10 * 60 * 1000);
     }
 
     void WeatherDataViewModel::setBoundingBox(const shared::BoundingBox &box) {

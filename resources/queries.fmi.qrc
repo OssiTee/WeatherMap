@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>queries/fmi_request.txt</file>
+        <file>queries/fmi_cloud_request.txt</file>
         <file>queries/weather_coords.txt</file>
     </qresource>
 </RCC>

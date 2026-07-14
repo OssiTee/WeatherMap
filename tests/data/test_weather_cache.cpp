@@ -13,7 +13,7 @@ void TestWeatherCache::testCachePutAndGet() {
     data::WeatherCache cache;
 
     std::vector<domain::IWeatherRepository::RawWeatherPoint> pts = {
-        {61.0, 25.0, 5.0, 3.0, 180.0, 0.0, 1}};
+    {61.0, 25.0, 5.0, 3.0, 180.0, 0.0, 1}};
 
     QDateTime now = QDateTime::currentDateTimeUtc();
     cache.put(shared::ForecastHorizon::Now, pts, now);
@@ -27,7 +27,7 @@ void TestWeatherCache::testFreshness() {
     data::WeatherCache cache;
 
     std::vector<domain::IWeatherRepository::RawWeatherPoint> pts = {
-        {61.0, 25.0, 5.0, 3.0, 180.0, 0.0, 1}};
+    {61.0, 25.0, 5.0, 3.0, 180.0, 0.0, 1}};
 
     QDateTime now = QDateTime::currentDateTimeUtc();
     cache.put(shared::ForecastHorizon::Now, pts, now);

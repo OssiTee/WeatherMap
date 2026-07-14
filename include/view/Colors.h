@@ -14,7 +14,7 @@ namespace view {
         static inline QColor WindArrow() { return QColor(0, 0, 120); }
 
         // Map fill color
-        static inline QColor MapFill() { return QColor(230, 230, 230); }
+        static inline QColor MapFill() { return QColor(242, 242, 242); }
 
         // Map border color
         static inline QColor MapBorder() { return Qt::black; }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QImage>
 #include <QPixmap>
 #include <QPointF>
 #include <QWidget>
@@ -19,6 +20,7 @@ namespace view {
      *
      * MapWidget is the central drawing surface of the application. It renders:
      *  - The geographic map polygons
+     *  - Cloud coverage overlay
      *  - City labels
      *  - Weather icons and temperatures
      *  - Wind arrows
@@ -64,6 +66,16 @@ namespace view {
         void setWeatherPoints(
             std::shared_ptr<const std::vector<viewmodel::WeatherPointItem>>
                 points);
+
+        /**
+         * @brief Sets the cloud coverage overlay image.
+         */
+        void setCloudOverlayImage(QImage image);
+
+        /**
+         * @brief Enables or disables rendering of the cloud coverage overlay.
+         */
+        void setCloudOverlayVisible(bool visible);
 
         /**
          * @brief Sets the city label data.
@@ -118,6 +130,7 @@ namespace view {
          *
          * This method delegates to:
          *  - drawMap()
+         *  - drawCloudOverlay()
          *  - drawCityLabels()
          *  - drawWeatherIconsAndTemperatures()
          *  - drawWindArrows()
@@ -143,6 +156,7 @@ namespace view {
         Scale computeScale() const;
 
         void drawMap(QPainter &painter);
+        void drawCloudOverlay(QPainter &painter);
         void drawCityLabels(QPainter &painter);
         void drawWeatherIconsAndTemperatures(QPainter &painter);
         void drawWindArrows(QPainter &painter);
@@ -165,6 +179,8 @@ namespace view {
             m_weatherPoints;
         std::shared_ptr<const std::vector<viewmodel::CityLabelItem>>
             m_cityLabels;
+        QImage m_cloudOverlayImage;
+        bool m_cloudOverlayVisible = true;
 
         double m_mapAspect = 1.0; // Current map aspect ratio (width / height)
 

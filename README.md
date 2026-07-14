@@ -20,7 +20,9 @@ The application follows a clean, layered architecture (View → ViewModel → Do
 - City names and coordinates loaded from JSON (`resources/cities/cities.json`)
 - Weather data fetched from FMI Open Data WFS (no API key required)
 - FMI request template stored as a Qt resource for cleaner external API configuration
+- FMI cloud query template stored as a Qt resource (`:/queries/fmi_cloud_request.txt`)
 - Weather point coordinates stored as a Qt resource (`:/queries/weather_coords.txt`)
+- Optional cloud coverage overlay generated from FMI WFS `TotalCloudCover` data
 - Temperature unit selection (Celsius / Fahrenheit)
 - Forecast horizon selection (current / future)
 - Automatic weather refresh every 10 minutes
@@ -38,6 +40,9 @@ WeatherMap uses the **FMI Open Data WFS API**, which is fully public and require
 - no authentication  
 - no registration  
 
+WeatherMap also uses FMI Open Data WFS `TotalCloudCover` values for cloud
+coverage overlay.
+
 ---
 
 ## Map & Icon Data Sources
@@ -45,7 +50,7 @@ WeatherMap uses the **FMI Open Data WFS API**, which is fully public and require
 - Map geometry: Natural Earth public-domain data  
 - Weather icons: FMI WeatherSymbol3 (MIT license)  
 - Weather point coordinates configured through Qt resource `:/queries/weather_coords.txt`
-- FMI request template and query resources under `resources/queries/`
+- FMI request templates and query resources under `resources/queries/`
 - All assets are stored locally under `resources/`
 
 ---
@@ -58,7 +63,7 @@ WeatherMap/
 ├── include/        # Public headers for all layers
 ├── src/            # Implementation for domain, data, viewmodel, view
 ├── tests/          # Full test suite (QtTest), single test runner
-├── resources/      # Map GeoJSON, city data, icons, FMI request template and weather coordinate resources
+├── resources/      # Map GeoJSON, city data, icons, FMI WFS query resources
 ├── CMakeLists.txt  # Root CMake configuration
 └── build_test_and_run.sh
 ```
@@ -77,6 +82,8 @@ Pure business logic, no Qt dependencies.
 - `WeatherService`
 - `CoordinateNormalizer`
 - `MapService`
+- `CloudCoverageService`
+- `ICloudCoverageRepository`
 
 ### **Data Layer** (`include/data/`)
 External data access and parsing.
@@ -87,6 +94,7 @@ External data access and parsing.
 - `WeatherCache`
 - `NetworkClient`
 - `FmiXmlParser`
+- `CloudCoverageRepository`
 
 ### **ViewModel Layer** (`include/viewmodel/`)
 Presentation logic, Qt signals, async operations.
@@ -94,6 +102,7 @@ Presentation logic, Qt signals, async operations.
 - `MapLoaderViewModel`
 - `CityLabelsViewModel`
 - `WeatherDataViewModel`
+- `CloudOverlayViewModel`
 
 ### **View Layer** (`include/view/`)
 Qt Widgets UI.
@@ -212,12 +221,4 @@ sudo apt install -y \
     pkg-config \
     libspdlog-dev
 ```
----
-
-## Future Plans
-
-### Cloud Coverage Visualization
-
-An upcoming planned feature is the ability to display cloud coverage areas on the weather map. The goal is to incorporate cloud cover data from FMI and visualize it as shaded or contoured regions on the map, similar to how other weather layers are rendered. This would provide a clearer overview of large‑scale cloud patterns and improve the overall usefulness of the weather visualization.
-
 ---

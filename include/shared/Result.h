@@ -32,18 +32,25 @@ namespace shared {
 
         bool isError() const { return std::holds_alternative<Error>(m_data); }
 
-        const T &value() const {
+        const T &value() const & {
             if (!isSuccess()) {
                 throw std::bad_variant_access();
             }
             return std::get<T>(m_data);
         }
 
-        T &value() {
+        T &value() & {
             if (!isSuccess()) {
                 throw std::bad_variant_access();
             }
             return std::get<T>(m_data);
+        }
+
+        T &&value() && {
+            if (!isSuccess()) {
+                throw std::bad_variant_access();
+            }
+            return std::get<T>(std::move(m_data));
         }
 
         const std::string &errorMessage() const {

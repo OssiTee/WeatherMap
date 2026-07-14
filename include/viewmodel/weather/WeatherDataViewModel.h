@@ -3,11 +3,10 @@
 #include <QDateTime>
 #include <QFutureWatcher>
 #include <QObject>
-#include <QTimer>
 #include <memory>
 #include <vector>
 
-#include "domain/weather/WeatherService.h"
+#include "domain/weather/IWeatherService.h"
 #include "shared/BoundingBox.h"
 #include "shared/ForecastHorizon.h"
 #include "shared/TemperatureUnit.h"
@@ -129,7 +128,6 @@ namespace viewmodel {
 
         std::shared_ptr<const std::vector<WeatherPointItem>> m_points;
 
-        QTimer m_refreshTimer; // Automatic refresh timer
         QFutureWatcher<
             shared::Result<std::vector<domain::NormalizedWeatherPoint>>>
             m_weatherFutureWatcher; // Background weather fetch watcher

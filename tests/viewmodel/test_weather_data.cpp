@@ -1,8 +1,6 @@
 #include <QtTest/QtTest>
 
-#include "domain/weather/IWeatherRepository.h"
 #include "domain/weather/IWeatherService.h"
-#include "domain/weather/WeatherService.h"
 #include "shared/ForecastHorizon.h"
 #include "shared/Result.h"
 #include "shared/TemperatureUnit.h"
@@ -10,41 +8,24 @@
 
 // -----------------------------------------------------------------------------
 // Stub service used by the ViewModel tests
-// This simulates the domain::IWeatherService interface.
-// It returns pre-defined NormalizedWeatherPoint data and performs
-// temperature conversion exactly like the real WeatherService.
+// Returns pre-defined NormalizedWeatherPoint data as-is.
+// Temperature conversion is the responsibility of the real WeatherService
+// and is tested separately in test_weather_service.cpp.
 // -----------------------------------------------------------------------------
 class StubWeatherService : public domain::IWeatherService {
   public:
-    // Test fills this vector directly
     std::vector<domain::NormalizedWeatherPoint> data;
-
-    // Internal temperature unit state
     shared::TemperatureUnit unit = shared::TemperatureUnit::Celsius;
 
-    // Set the temperature unit (Celsius or Fahrenheit)
     void setTemperatureUnit(shared::TemperatureUnit u) override { unit = u; }
 
-    // Return the currently active temperature unit
     shared::TemperatureUnit temperatureUnit() const override { return unit; }
 
-    // Return weather data for the given horizon and bounding box.
-    // This stub performs temperature conversion exactly like the real service.
     shared::Result<std::vector<domain::NormalizedWeatherPoint>>
     getWeatherForMap(shared::ForecastHorizon,
                      const shared::BoundingBox &) override {
-        // Make a copy so we can modify it
-        auto out = data;
-
-        // Apply Fahrenheit conversion if needed
-        if (unit == shared::TemperatureUnit::Fahrenheit) {
-            for (auto &p : out) {
-                p.temperature = p.temperature * 9.0 / 5.0 + 32.0;
-            }
-        }
-
         return shared::Result<std::vector<domain::NormalizedWeatherPoint>>::
-            success(std::move(out));
+            success(data);
     }
 };
 
@@ -89,33 +70,31 @@ void TestWeatherDataViewModel::testLoadSuccess() {
 }
 
 // -----------------------------------------------------------------------------
-// Test: Temperature unit conversion (Celsius → Fahrenheit)
+// Test: ViewModel forwards temperature unit to the service
 // -----------------------------------------------------------------------------
 void TestWeatherDataViewModel::testTemperatureUnitConversion() {
     auto service = std::make_unique<StubWeatherService>();
-
-    // Provide Celsius temperature (10°C)
+    auto *serviceRaw = service.get();
     service->data = {{0.5, 0.5, 10.0, 5.0, 180.0, 1}};
 
     viewmodel::WeatherDataViewModel vm(std::move(service));
 
     shared::BoundingBox box{0, 1, 0, 1};
     vm.setBoundingBox(box);
-
-    // Request Fahrenheit output
     vm.setTemperatureUnit(shared::TemperatureUnit::Fahrenheit);
 
     QSignalSpy spy(&vm, &viewmodel::WeatherDataViewModel::weatherPointsReady);
-
     vm.load(shared::ForecastHorizon::Now);
 
     QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, 500);
 
+    // The ViewModel must have forwarded the unit selection to the service.
+    QCOMPARE(serviceRaw->unit, shared::TemperatureUnit::Fahrenheit);
+
+    // The stub returns data unchanged — ViewModel must not modify temperatures.
     const auto &pts = vm.points();
     QCOMPARE(pts.size(), size_t(1));
-
-    // 10°C → 50°F
-    QVERIFY(qAbs(pts[0].temperature - 50.0) < 1e-6);
+    QCOMPARE(pts[0].temperature, 10.0);
 }
 
 QTEST_MAIN(TestWeatherDataViewModel)

@@ -22,6 +22,7 @@ namespace {
 
     static constexpr int WEATHER_ICON_SIZE = 64;
     static constexpr double INITIAL_WINDOW_SCALE = 0.8;
+    static constexpr qreal CLOUD_OVERLAY_OPACITY = 0.70;
 
     QString weatherIconPath(viewmodel::WeatherIcon icon) {
         switch (icon) {
@@ -62,6 +63,16 @@ namespace view {
         std::shared_ptr<const std::vector<viewmodel::WeatherPointItem>>
             points) {
         m_weatherPoints = std::move(points);
+        update();
+    }
+
+    void MapWidget::setCloudOverlayImage(QImage image) {
+        m_cloudOverlayImage = std::move(image);
+        update();
+    }
+
+    void MapWidget::setCloudOverlayVisible(bool visible) {
+        m_cloudOverlayVisible = visible;
         update();
     }
 
@@ -111,6 +122,7 @@ namespace view {
         painter.setRenderHint(QPainter::Antialiasing, true);
 
         drawMap(painter);
+        drawCloudOverlay(painter);
         drawCityLabels(painter);
         drawWeatherIconsAndTemperatures(painter);
         drawWindArrows(painter);
@@ -153,6 +165,19 @@ namespace view {
             QPointF textPos(pos.x() - textWidth * 0.5, pos.y() + ascent * 0.5);
             painter.drawText(textPos, c.name);
         }
+    }
+
+    void MapWidget::drawCloudOverlay(QPainter &painter) {
+        if (!m_cloudOverlayVisible || m_cloudOverlayImage.isNull()) {
+            return;
+        }
+
+        auto scale = computeScale();
+        const QRectF targetRect(0.0, 0.0, scale.sx, scale.sy);
+
+        painter.setOpacity(CLOUD_OVERLAY_OPACITY);
+        painter.drawImage(targetRect, m_cloudOverlayImage);
+        painter.setOpacity(1.0);
     }
 
     void MapWidget::drawWeatherIconsAndTemperatures(QPainter &painter) {

@@ -26,11 +26,13 @@ qt_add_resources(test_resources
 # ----------------------------------------------------------------------
 set(TEST_SOURCES
     data/test_city_loader.cpp
+    data/test_cloud_coverage_repository.cpp
     data/test_geojson_provider.cpp
     data/test_fmi_xml_parser.cpp
     data/test_weather_cache.cpp
 
     domain/test_city_service.cpp
+    domain/test_cloud_service.cpp
     domain/test_coordinate_normalizer.cpp
     domain/test_weather_service.cpp
     domain/test_map_service.cpp
@@ -38,6 +40,7 @@ set(TEST_SOURCES
     view/test_map_widget.cpp
 
     viewmodel/test_city_labels.cpp
+    viewmodel/test_cloud_overlay.cpp
     viewmodel/test_map_loader.cpp
     viewmodel/test_weather_data.cpp
 )
