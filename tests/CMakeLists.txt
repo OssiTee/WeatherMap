@@ -33,6 +33,7 @@ set(TEST_SOURCES
 
     domain/test_city_service.cpp
     domain/test_cloud_service.cpp
+    domain/test_cloud_field_interpolator.cpp
     domain/test_coordinate_normalizer.cpp
     domain/test_weather_service.cpp
     domain/test_map_service.cpp

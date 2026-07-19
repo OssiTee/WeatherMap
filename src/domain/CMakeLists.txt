@@ -1,6 +1,7 @@
 add_library(domain
     weather/WeatherService.cpp
     cloud/CloudCoverageService.cpp
+    cloud/CloudFieldInterpolator.cpp
     city/CityService.cpp
     map/MapService.cpp
     CoordinateNormalizer.cpp

@@ -1,4 +1,5 @@
 #include "viewmodel/cloud/CloudOverlayViewModel.h"
+#include "domain/cloud/CloudFieldInterpolator.h"
 #include <QtConcurrent/QtConcurrent>
 #include <QColor>
 #include <QPainter>
@@ -8,10 +9,19 @@
 
 namespace {
 
-    constexpr int OVERLAY_WIDTH = 1024;
-    constexpr int OVERLAY_HEIGHT = 1024;
+    constexpr int OVERLAY_SIZE = 1024;
     constexpr int FIELD_WIDTH = 320;
     constexpr int FIELD_HEIGHT = 320;
+
+    constexpr double MIN_CLOUD_SPAN = 1.0;
+
+    constexpr double GAUSSIAN_SIGMA = 0.06;
+    constexpr double EMPHASIS_GAMMA = 0.62;
+
+    constexpr double MAX_ALPHA = 245.0;
+    constexpr double BASE_GRAY = 215.0;
+    constexpr double GRAY_DARKEN_RANGE = 175.0;
+
     // Repository performs one WFS request per sample point.
     // This denser grid smooths visible banding while staying responsive.
     constexpr int COARSE_GRID_LAT_SAMPLES = 8;
@@ -25,53 +35,42 @@ namespace {
         return image;
     }
 
+    inline size_t fieldIndex(int x, int y, int width) {
+        return static_cast<size_t>(y) * static_cast<size_t>(width) +
+               static_cast<size_t>(x);
+    }
+
     void paintCloudField(const std::vector<domain::NormalizedCloudPoint> &points,
                          QImage &field) {
-        // Gaussian weighting turns sparse samples into a smoother cloud field.
-        constexpr double sigma = 0.06;
-        constexpr double invTwoSigma2 = 1.0 / (2.0 * sigma * sigma);
+        // Domain interpolation produces a UI-independent cloud field.
+        auto cloudField = domain::CloudFieldInterpolator::buildWeightedCloudField(
+            points, FIELD_WIDTH, FIELD_HEIGHT, GAUSSIAN_SIGMA);
+        if (cloudField.empty()) {
+            return;
+        }
 
-        auto [minCloudIt, maxCloudIt] = std::minmax_element(
-            points.begin(), points.end(),
-            [](const auto &a, const auto &b) {
-                return a.cloudCoverPercent < b.cloudCoverPercent;
-            });
-        const double minCloud = minCloudIt->cloudCoverPercent;
-        const double maxCloud = maxCloudIt->cloudCoverPercent;
-        const double cloudSpan = std::max(1.0, maxCloud - minCloud);
+        auto [minCloudIt, maxCloudIt] =
+            std::minmax_element(cloudField.begin(), cloudField.end());
+        const double minCloud = *minCloudIt;
+        const double maxCloud = *maxCloudIt;
+        // Use local range normalization so contrast adapts to current data.
+        const double cloudSpan = std::max(MIN_CLOUD_SPAN, maxCloud - minCloud);
 
         for (int y = 0; y < FIELD_HEIGHT; ++y) {
-            const double yNorm = static_cast<double>(y) /
-                                 static_cast<double>(FIELD_HEIGHT - 1);
             for (int x = 0; x < FIELD_WIDTH; ++x) {
-                const double xNorm = static_cast<double>(x) /
-                                     static_cast<double>(FIELD_WIDTH - 1);
-
-                double weightedCloud = 0.0;
-                double weightSum = 0.0;
-
-                for (const auto &p : points) {
-                    const double dx = xNorm - p.xNorm;
-                    const double dy = yNorm - p.yNorm;
-                    const double dist2 = dx * dx + dy * dy;
-
-                    const double w = std::exp(-dist2 * invTwoSigma2);
-                    weightedCloud += w * std::clamp(p.cloudCoverPercent, 0.0, 100.0);
-                    weightSum += w;
-                }
-
-                if (weightSum <= 0.0) {
-                    continue;
-                }
-
-                const double cloud = weightedCloud / weightSum;
+                const double cloud = cloudField[fieldIndex(x, y, FIELD_WIDTH)];
+                // Convert cloud cover to [0,1] before applying visual emphasis.
                 const double normalized =
                     std::clamp((cloud - minCloud) / cloudSpan, 0.0, 1.0);
-                const double emphasized = std::pow(normalized, 0.62);
+                // Gamma < 1 boosts mid-range differences that would otherwise
+                // look flat in the overlay.
+                const double emphasized = std::pow(normalized, EMPHASIS_GAMMA);
 
                 // Keep low values light so the map stays readable.
-                const int alpha = static_cast<int>(emphasized * 245.0);
-                const int gray = static_cast<int>(215.0 - emphasized * 175.0);
+                const int alpha = static_cast<int>(emphasized * MAX_ALPHA);
+                // Darker gray means denser cloud area.
+                const int gray =
+                    static_cast<int>(BASE_GRAY - emphasized * GRAY_DARKEN_RANGE);
 
                 field.setPixelColor(x, y, QColor(gray, gray, gray, alpha));
             }
@@ -80,7 +79,7 @@ namespace {
 
     QImage buildOverlayImage(
         const std::vector<domain::NormalizedCloudPoint> &points) {
-        QImage image = createTransparentImage(OVERLAY_WIDTH, OVERLAY_HEIGHT);
+        QImage image = createTransparentImage(OVERLAY_SIZE, OVERLAY_SIZE);
         QImage field = createTransparentImage(FIELD_WIDTH, FIELD_HEIGHT);
 
         paintCloudField(points, field);
@@ -88,7 +87,7 @@ namespace {
         QPainter painter(&image);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-        painter.drawImage(QRect(0, 0, OVERLAY_WIDTH, OVERLAY_HEIGHT), field);
+        painter.drawImage(QRect(0, 0, OVERLAY_SIZE, OVERLAY_SIZE), field);
 
         return image;
     }
