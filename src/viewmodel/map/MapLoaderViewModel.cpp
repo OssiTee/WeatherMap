@@ -1,6 +1,5 @@
 #include "viewmodel/map/MapLoaderViewModel.h"
 
-#include <QMetaObject>
 #include <QMetaType>
 #include <QtConcurrent>
 #include <memory>
@@ -44,9 +43,14 @@ namespace viewmodel {
     // Construct the map loader and ensure signal meta type registration.
     MapLoaderViewModel::MapLoaderViewModel(
         std::unique_ptr<domain::IMapService> service, QObject *parent)
-        : QObject(parent), m_service(std::move(service)) {
+        : QObject(parent)
+        , m_service(std::shared_ptr<domain::IMapService>(std::move(service))) {
         static bool metaRegistered = registerMapShapeMetaType();
         (void)metaRegistered;
+
+        connect(&m_watcher,
+                &QFutureWatcher<shared::Result<domain::NormalizedMap>>::finished,
+                this, &MapLoaderViewModel::onMapLoadFinished);
     }
 
     // Load map geometry from the service asynchronously and emit the
@@ -54,36 +58,40 @@ namespace viewmodel {
     void MapLoaderViewModel::loadMap() {
         SPDLOG_INFO("Starting map loading...");
 
-        auto _ = QtConcurrent::run([this]() {
-            auto result = m_service->loadMap();
+        if (m_watcher.isRunning()) {
+            return;
+        }
 
-            if (result.isError()) {
-                auto msg = QString::fromStdString(result.errorMessage());
-                SPDLOG_ERROR("Failed to load map shape: {}",
-                             result.errorMessage());
+        auto service = m_service;
 
-                QMetaObject::invokeMethod(
-                    this, [this, msg]() { emit errorOccurred(msg); },
-                    Qt::QueuedConnection);
-                return;
-            }
-
-            const auto &map = result.value();
-
-            // Convert domain::NormalizedPoint → QPointF
-            auto qpolys = convertToQtPoints(map.polygons);
-
-            auto qpolysPtr =
-                std::make_shared<const std::vector<std::vector<QPointF>>>(
-                    std::move(qpolys));
-
-            QMetaObject::invokeMethod(
-                this,
-                [this, qpolysPtr, box = map.bbox]() {
-                    emit mapShapeReady(qpolysPtr, box);
-                },
-                Qt::QueuedConnection);
+        auto future = QtConcurrent::run([service = std::move(service)]() {
+            return service->loadMap();
         });
+
+        m_watcher.setFuture(std::move(future));
+    }
+
+    void MapLoaderViewModel::onMapLoadFinished() {
+        auto result = m_watcher.result();
+
+        if (result.isError()) {
+            SPDLOG_ERROR("Failed to load map shape: {}",
+                         result.errorMessage());
+            emit errorOccurred(QString::fromStdString(result.errorMessage()));
+            return;
+        }
+
+        const auto &map = result.value();
+
+        // Convert domain::NormalizedPoint → QPointF on the UI thread right
+        // before publishing the final immutable payload.
+        auto qpolys = convertToQtPoints(map.polygons);
+
+        auto qpolysPtr =
+            std::make_shared<const std::vector<std::vector<QPointF>>>(
+                std::move(qpolys));
+
+        emit mapShapeReady(qpolysPtr, map.bbox);
     }
 
 } // namespace viewmodel

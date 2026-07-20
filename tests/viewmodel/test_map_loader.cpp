@@ -8,8 +8,13 @@
 class StubMapService : public domain::IMapService {
   public:
     domain::NormalizedMap data; // <-- This is what the test writes into
+    bool shouldFail = false;
 
     shared::Result<domain::NormalizedMap> loadMap() const override {
+        if (shouldFail) {
+            return shared::Result<domain::NormalizedMap>::error(
+                "map load failed");
+        }
         return shared::Result<domain::NormalizedMap>::success(data);
     }
 };
@@ -19,6 +24,7 @@ class TestMapLoaderViewModel : public QObject {
 
   private slots:
     void testMapLoading();
+        void testMapLoadingError();
 };
 
 void TestMapLoaderViewModel::testMapLoading() {
@@ -61,6 +67,22 @@ void TestMapLoaderViewModel::testMapLoading() {
 
     QVERIFY(qAbs(polys[0][1].x() - 1.0) < 1e-6);
     QVERIFY(qAbs(polys[0][1].y() - 0.0) < 1e-6);
+}
+
+void TestMapLoaderViewModel::testMapLoadingError() {
+    auto service = std::make_unique<StubMapService>();
+    service->shouldFail = true;
+
+    viewmodel::MapLoaderViewModel vm(std::move(service));
+
+    QSignalSpy errorSpy(&vm, &viewmodel::MapLoaderViewModel::errorOccurred);
+    QSignalSpy readySpy(&vm, &viewmodel::MapLoaderViewModel::mapShapeReady);
+
+    vm.loadMap();
+
+    QTRY_VERIFY_WITH_TIMEOUT(errorSpy.count() == 1, 500);
+    QCOMPARE(readySpy.count(), 0);
+    QCOMPARE(errorSpy.takeFirst().at(0).toString(), QString("map load failed"));
 }
 
 QTEST_MAIN(TestMapLoaderViewModel)

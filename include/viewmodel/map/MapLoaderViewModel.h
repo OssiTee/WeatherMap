@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFutureWatcher>
 #include <QObject>
 #include <QPointF>
 #include <QVector>
@@ -74,9 +75,13 @@ namespace viewmodel {
          */
         void errorOccurred(const QString &message);
 
+      private slots:
+        void onMapLoadFinished();
+
       private:
         // Map service used to load raw polygon data.
-        std::unique_ptr<domain::IMapService> m_service;
+        std::shared_ptr<domain::IMapService> m_service;
+        QFutureWatcher<shared::Result<domain::NormalizedMap>> m_watcher;
     };
 
 } // namespace viewmodel
