@@ -100,13 +100,13 @@ namespace viewmodel {
 
     void CloudOverlayViewModel::startFetch(int latSamples, int lonSamples,
                                            bool detailed) {
-        auto *service = m_service.get();
+        auto service = m_service;
         auto bbox = m_bbox;
 
         m_loadingDetailed = detailed;
 
-        auto future = QtConcurrent::run([service, bbox, latSamples,
-                                         lonSamples]() {
+        auto future = QtConcurrent::run([service = std::move(service), bbox,
+                                         latSamples, lonSamples]() {
             auto result = service->getCloudForMap(bbox, latSamples, lonSamples);
             if (result.isError()) {
                 return shared::Result<QImage>::error(result.errorMessage());
@@ -122,7 +122,8 @@ namespace viewmodel {
 
     CloudOverlayViewModel::CloudOverlayViewModel(
         std::unique_ptr<domain::ICloudCoverageService> service)
-        : m_service(std::move(service)) {
+        : m_service(
+              std::shared_ptr<domain::ICloudCoverageService>(std::move(service))) {
         assert(m_service && "ICloudCoverageService must not be null");
 
         connect(&m_watcher, &QFutureWatcher<shared::Result<QImage>>::finished,

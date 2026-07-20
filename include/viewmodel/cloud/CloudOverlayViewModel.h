@@ -66,7 +66,7 @@ namespace viewmodel {
          */
         void startFetch(int latSamples, int lonSamples, bool detailed);
 
-        std::unique_ptr<domain::ICloudCoverageService> m_service;
+        std::shared_ptr<domain::ICloudCoverageService> m_service;
         shared::BoundingBox m_bbox;
         bool m_hasBBox = false;
 
