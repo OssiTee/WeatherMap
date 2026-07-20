@@ -18,6 +18,19 @@ namespace {
 
 namespace domain {
 
+    namespace {
+
+        inline double convertTemperature(double celsius,
+                                         shared::TemperatureUnit unit) {
+            if (unit == shared::TemperatureUnit::Fahrenheit) {
+                return toFahrenheit(celsius);
+            }
+
+            return celsius;
+        }
+
+    } // namespace
+
     WeatherService::WeatherService(std::unique_ptr<IWeatherRepository> repo)
         : m_repo(std::move(repo)) {
         assert(m_repo && "IWeatherRepository must not be null");
@@ -25,7 +38,8 @@ namespace domain {
 
     shared::Result<std::vector<NormalizedWeatherPoint>>
     WeatherService::getWeatherForMap(shared::ForecastHorizon horizon,
-                                     const shared::BoundingBox &box) {
+                                     const shared::BoundingBox &box,
+                                     shared::TemperatureUnit unit) {
 
         // 1) Fetch raw data
         auto rawResult = m_repo->fetchWeather(horizon);
@@ -52,10 +66,7 @@ namespace domain {
             auto xy =
                 CoordinateNormalizer::normalize(p.latitude, p.longitude, box);
 
-            double temp = p.temperature;
-            if (m_unit == shared::TemperatureUnit::Fahrenheit) {
-                temp = toFahrenheit(temp);
-            }
+            const double temp = convertTemperature(p.temperature, unit);
 
             out.emplace_back(
                 NormalizedWeatherPoint{.xNorm = xy.x,
@@ -68,14 +79,6 @@ namespace domain {
 
         return shared::Result<std::vector<NormalizedWeatherPoint>>::success(
             std::move(out));
-    }
-
-    void WeatherService::setTemperatureUnit(shared::TemperatureUnit unit) {
-        m_unit = unit;
-    }
-
-    shared::TemperatureUnit WeatherService::temperatureUnit() const {
-        return m_unit;
     }
 
 } // namespace domain

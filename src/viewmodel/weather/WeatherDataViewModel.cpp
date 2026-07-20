@@ -28,7 +28,7 @@ namespace viewmodel {
 
     void
     WeatherDataViewModel::setTemperatureUnit(shared::TemperatureUnit unit) {
-        m_service->setTemperatureUnit(unit);
+        m_lastRequestedUnit = unit;
     }
 
     // Convert the FMI WeatherSymbol3 numeric code into a UI weather icon.
@@ -68,7 +68,6 @@ namespace viewmodel {
         }
 
         m_lastHorizon = horizon;
-        m_lastRequestedUnit = m_service->temperatureUnit();
 
         // Launch asynchronous weather loading on a background thread using
         // QtConcurrent. Instead of capturing 'this', we copy only the
@@ -84,8 +83,7 @@ namespace viewmodel {
         auto service = m_service.get();
 
         auto future = QtConcurrent::run([service, unit, bbox, horizon]() {
-            service->setTemperatureUnit(unit);
-            return service->getWeatherForMap(horizon, bbox);
+            return service->getWeatherForMap(horizon, bbox, unit);
         });
         m_weatherFutureWatcher.setFuture(std::move(future));
     }

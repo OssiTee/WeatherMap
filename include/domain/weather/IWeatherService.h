@@ -21,7 +21,6 @@ namespace domain {
      * Responsibilities:
      *   - retrieve weather data for a given forecast horizon
      *   - apply temperature unit conversion (Celsius ↔ Fahrenheit)
-     *   - expose and modify the active temperature unit
      *
      * The interface contains no UI logic and is safe to use from any layer.
      */
@@ -37,32 +36,19 @@ namespace domain {
          *
          * Implementations must:
          *   - fetch raw weather data for the given forecast horizon
-         *   - apply temperature unit conversion using the currently active unit
+         *   - normalize coordinates into the current map viewport
+         *   - apply temperature unit conversion for this request
          *
          * @param horizon Forecast horizon (e.g., Now, +3h, +6h).
+         * @param box Geographic map bounds used for normalization.
+         * @param unit Temperature unit for this request.
          * @return Result containing a vector of WeatherPoint objects on
          * success, or an error message on failure.
          */
         virtual shared::Result<std::vector<domain::NormalizedWeatherPoint>>
         getWeatherForMap(shared::ForecastHorizon horizon,
-                         const shared::BoundingBox &box) = 0;
-
-        /**
-         * @brief Sets the temperature unit used for returned weather data.
-         *
-         * All subsequent calls to getWeatherForMap() must use this unit unless
-         * an overload explicitly overrides it.
-         *
-         * @param unit Temperature unit (Celsius or Fahrenheit).
-         */
-        virtual void setTemperatureUnit(shared::TemperatureUnit unit) = 0;
-
-        /**
-         * @brief Returns the currently active temperature unit.
-         *
-         * @return TemperatureUnit enum value.
-         */
-        virtual shared::TemperatureUnit temperatureUnit() const = 0;
+                         const shared::BoundingBox &box,
+                         shared::TemperatureUnit unit) = 0;
     };
 
 } // namespace domain

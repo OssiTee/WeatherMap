@@ -50,10 +50,9 @@ namespace domain {
 
                     // Nearby samples dominate, distant samples fade smoothly.
                     const double w = std::exp(-dist2 * invTwoSigma2);
-                    weightedCloud += w *
-                                     std::clamp(p.cloudCoverPercent,
-                                                MIN_CLOUD_PERCENT,
-                                                MAX_CLOUD_PERCENT);
+                    weightedCloud +=
+                        w * std::clamp(p.cloudCoverPercent, MIN_CLOUD_PERCENT,
+                                       MAX_CLOUD_PERCENT);
                     weightSum += w;
                 }
 

@@ -22,6 +22,7 @@ namespace viewmodel {
      *  - Request weather data from the domain WeatherService.
      *  - Receive already-normalized weather points from the domain layer.
      *  - Convert domain weather points into UI-friendly view models.
+     *  - Keep presentation-level state such as selected temperature unit.
      *  - Automatically refresh weather data at fixed intervals.
      */
     class WeatherDataViewModel : public QObject {
@@ -61,8 +62,8 @@ namespace viewmodel {
         /**
          * @brief Sets the temperature unit used when presenting weather data.
          *
-         * Changing the unit triggers a reload of weather data on the next call
-         * to load().
+         * The unit is stored as viewmodel state and forwarded explicitly with
+         * each load request.
          *
          * @param unit Temperature unit (Celsius or Fahrenheit).
          */

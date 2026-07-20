@@ -29,6 +29,7 @@ class TestWeatherService : public QObject {
   private slots:
     void testCelsiusPassThrough();
     void testFahrenheitConversion();
+    void testExplicitUnitFahrenheitConversion();
 };
 
 // -----------------------------------------------------------------------------
@@ -41,7 +42,8 @@ void TestWeatherService::testCelsiusPassThrough() {
     domain::WeatherService service(std::move(repo));
 
     shared::BoundingBox box{60, 65, 20, 25};
-    auto result = service.getWeatherForMap(shared::ForecastHorizon::Now, box);
+    auto result = service.getWeatherForMap(shared::ForecastHorizon::Now, box,
+                                           shared::TemperatureUnit::Celsius);
 
     QVERIFY(result.isSuccess());
     const auto &points = result.value();
@@ -57,10 +59,10 @@ void TestWeatherService::testFahrenheitConversion() {
     };
 
     domain::WeatherService service(std::move(repo));
-    service.setTemperatureUnit(shared::TemperatureUnit::Fahrenheit);
 
     shared::BoundingBox box{60, 65, 20, 25};
-    auto result = service.getWeatherForMap(shared::ForecastHorizon::Now, box);
+    auto result = service.getWeatherForMap(shared::ForecastHorizon::Now, box,
+                                           shared::TemperatureUnit::Fahrenheit);
 
     QVERIFY(result.isSuccess());
     const auto &pts = result.value();
@@ -68,6 +70,23 @@ void TestWeatherService::testFahrenheitConversion() {
     QCOMPARE(pts.size(), size_t(1));
 
     // 0°C = 32°F
+    QVERIFY(qAbs(pts[0].temperature - 32.0) < 1e-6);
+}
+
+void TestWeatherService::testExplicitUnitFahrenheitConversion() {
+    auto repo = std::make_unique<FakeWeatherRepository>();
+    repo->fakePoints = {{60.0, 24.0, 0.0, 5.0, 180.0, 0.0, 1}};
+
+    domain::WeatherService service(std::move(repo));
+
+    shared::BoundingBox box{60, 65, 20, 25};
+    auto result = service.getWeatherForMap(shared::ForecastHorizon::Now, box,
+                                           shared::TemperatureUnit::Fahrenheit);
+
+    QVERIFY(result.isSuccess());
+
+    const auto &pts = result.value();
+    QCOMPARE(pts.size(), size_t(1));
     QVERIFY(qAbs(pts[0].temperature - 32.0) < 1e-6);
 }
 

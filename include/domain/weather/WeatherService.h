@@ -43,53 +43,23 @@ namespace domain {
          * @brief Returns weather points prepared for map rendering.
          *
          * Fetches raw weather data for the given forecast horizon and applies
-         * domain-level transformations such as temperature unit conversion
-         * using the currently active temperature unit.
+         * domain-level transformations such as coordinate normalization and
+         * temperature unit conversion.
          *
          * @param horizon Forecast horizon (e.g., Now, +3h, +6h).
-         * @return Result containing a vector of WeatherPoint objects on
-         * success, or an error message on failure.
-         */
-        shared::Result<std::vector<domain::NormalizedWeatherPoint>>
-        getWeatherForMap(shared::ForecastHorizon horizon,
-                         const shared::BoundingBox &box) override;
-
-        /**
-         * @brief Sets the temperature unit used for returned weather data.
-         *
-         * All subsequent calls to getWeatherForMap() will use this unit.
-         *
-         * @param unit Temperature unit (Celsius or Fahrenheit).
-         */
-        void setTemperatureUnit(shared::TemperatureUnit unit) override;
-
-        /**
-         * @brief Returns the currently active temperature unit.
-         *
-         * @return TemperatureUnit enum value.
-         */
-        shared::TemperatureUnit temperatureUnit() const override;
-
-        /**
-         * @brief Returns weather points prepared for map rendering using the
-         * specified temperature unit.
-         *
-         * This overload allows callers to request weather data in a specific
-         * unit without modifying the global service state.
-         *
-         * @param horizon Forecast horizon.
+         * @param horizon Forecast horizon (e.g., Now, +3h, +6h).
+         * @param box Geographic map bounds used for normalization.
          * @param unit Temperature unit to apply for this request.
          * @return Result containing a vector of WeatherPoint objects on
          * success, or an error message on failure.
          */
         shared::Result<std::vector<domain::NormalizedWeatherPoint>>
         getWeatherForMap(shared::ForecastHorizon horizon,
-                         shared::TemperatureUnit unit);
+                         const shared::BoundingBox &box,
+                         shared::TemperatureUnit unit) override;
 
       private:
         std::unique_ptr<IWeatherRepository> m_repo; // Data source for weather.
-        shared::TemperatureUnit m_unit =
-            shared::TemperatureUnit::Celsius; // Active temperature unit.
     };
 
 } // namespace domain

@@ -19,7 +19,8 @@ namespace domain {
          * @param width Output field width.
          * @param height Output field height.
          * @param sigma Gaussian sigma in normalized map-space units.
-         * @return Row-major field of size width*height, or empty on invalid input.
+         * @return Row-major field of size width*height, or empty on invalid
+         * input.
          */
         static std::vector<double>
         buildWeightedCloudField(const std::vector<NormalizedCloudPoint> &points,

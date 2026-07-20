@@ -1,8 +1,8 @@
 #include "viewmodel/cloud/CloudOverlayViewModel.h"
 #include "domain/cloud/CloudFieldInterpolator.h"
-#include <QtConcurrent/QtConcurrent>
 #include <QColor>
 #include <QPainter>
+#include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -40,11 +40,13 @@ namespace {
                static_cast<size_t>(x);
     }
 
-    void paintCloudField(const std::vector<domain::NormalizedCloudPoint> &points,
-                         QImage &field) {
+    void
+    paintCloudField(const std::vector<domain::NormalizedCloudPoint> &points,
+                    QImage &field) {
         // Domain interpolation produces a UI-independent cloud field.
-        auto cloudField = domain::CloudFieldInterpolator::buildWeightedCloudField(
-            points, FIELD_WIDTH, FIELD_HEIGHT, GAUSSIAN_SIGMA);
+        auto cloudField =
+            domain::CloudFieldInterpolator::buildWeightedCloudField(
+                points, FIELD_WIDTH, FIELD_HEIGHT, GAUSSIAN_SIGMA);
         if (cloudField.empty()) {
             return;
         }
@@ -69,16 +71,16 @@ namespace {
                 // Keep low values light so the map stays readable.
                 const int alpha = static_cast<int>(emphasized * MAX_ALPHA);
                 // Darker gray means denser cloud area.
-                const int gray =
-                    static_cast<int>(BASE_GRAY - emphasized * GRAY_DARKEN_RANGE);
+                const int gray = static_cast<int>(
+                    BASE_GRAY - emphasized * GRAY_DARKEN_RANGE);
 
                 field.setPixelColor(x, y, QColor(gray, gray, gray, alpha));
             }
         }
     }
 
-    QImage buildOverlayImage(
-        const std::vector<domain::NormalizedCloudPoint> &points) {
+    QImage
+    buildOverlayImage(const std::vector<domain::NormalizedCloudPoint> &points) {
         QImage image = createTransparentImage(OVERLAY_SIZE, OVERLAY_SIZE);
         QImage field = createTransparentImage(FIELD_WIDTH, FIELD_HEIGHT);
 
@@ -112,8 +114,7 @@ namespace viewmodel {
 
             auto points = std::move(result).value();
 
-            return shared::Result<QImage>::success(
-                buildOverlayImage(points));
+            return shared::Result<QImage>::success(buildOverlayImage(points));
         });
 
         m_watcher.setFuture(std::move(future));

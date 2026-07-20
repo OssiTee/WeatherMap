@@ -15,17 +15,16 @@
 class StubWeatherService : public domain::IWeatherService {
   public:
     std::vector<domain::NormalizedWeatherPoint> data;
-    shared::TemperatureUnit unit = shared::TemperatureUnit::Celsius;
-
-    void setTemperatureUnit(shared::TemperatureUnit u) override { unit = u; }
-
-    shared::TemperatureUnit temperatureUnit() const override { return unit; }
+    bool usedExplicitUnitFetch = false;
+    shared::TemperatureUnit explicitUnit = shared::TemperatureUnit::Celsius;
 
     shared::Result<std::vector<domain::NormalizedWeatherPoint>>
-    getWeatherForMap(shared::ForecastHorizon,
-                     const shared::BoundingBox &) override {
-        return shared::Result<std::vector<domain::NormalizedWeatherPoint>>::
-            success(data);
+    getWeatherForMap(shared::ForecastHorizon, const shared::BoundingBox &,
+                     shared::TemperatureUnit requestedUnit) override {
+        usedExplicitUnitFetch = true;
+        explicitUnit = requestedUnit;
+        return shared::Result<
+            std::vector<domain::NormalizedWeatherPoint>>::success(data);
     }
 };
 
@@ -89,7 +88,8 @@ void TestWeatherDataViewModel::testTemperatureUnitConversion() {
     QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, 500);
 
     // The ViewModel must have forwarded the unit selection to the service.
-    QCOMPARE(serviceRaw->unit, shared::TemperatureUnit::Fahrenheit);
+    QVERIFY(serviceRaw->usedExplicitUnitFetch);
+    QCOMPARE(serviceRaw->explicitUnit, shared::TemperatureUnit::Fahrenheit);
 
     // The stub returns data unchanged — ViewModel must not modify temperatures.
     const auto &pts = vm.points();

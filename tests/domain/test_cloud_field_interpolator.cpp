@@ -12,11 +12,10 @@ class TestCloudFieldInterpolator : public QObject {
 };
 
 void TestCloudFieldInterpolator::testReturnsEmptyOnInvalidInput() {
-    const std::vector<domain::NormalizedCloudPoint> points = {
-        {0.5, 0.5, 60.0}};
+    const std::vector<domain::NormalizedCloudPoint> points = {{0.5, 0.5, 60.0}};
 
-    auto noPoints = domain::CloudFieldInterpolator::buildWeightedCloudField(
-        {}, 8, 8, 0.06);
+    auto noPoints =
+        domain::CloudFieldInterpolator::buildWeightedCloudField({}, 8, 8, 0.06);
     QVERIFY(noPoints.empty());
 
     auto badWidth = domain::CloudFieldInterpolator::buildWeightedCloudField(
@@ -30,8 +29,10 @@ void TestCloudFieldInterpolator::testReturnsEmptyOnInvalidInput() {
 
 void TestCloudFieldInterpolator::testUniformInputStaysUniform() {
     const std::vector<domain::NormalizedCloudPoint> points = {
-        {0.25, 0.25, 40.0}, {0.75, 0.25, 40.0},
-        {0.25, 0.75, 40.0}, {0.75, 0.75, 40.0}};
+        {0.25, 0.25, 40.0},
+        {0.75, 0.25, 40.0},
+        {0.25, 0.75, 40.0},
+        {0.75, 0.75, 40.0}};
 
     const int width = 12;
     const int height = 10;
@@ -46,8 +47,8 @@ void TestCloudFieldInterpolator::testUniformInputStaysUniform() {
 }
 
 void TestCloudFieldInterpolator::testInterpolationWeightsNearbyPointsMore() {
-    const std::vector<domain::NormalizedCloudPoint> points = {
-        {0.1, 0.1, 90.0}, {0.9, 0.9, 10.0}};
+    const std::vector<domain::NormalizedCloudPoint> points = {{0.1, 0.1, 90.0},
+                                                              {0.9, 0.9, 10.0}};
 
     const int width = 11;
     const int height = 11;
@@ -57,8 +58,7 @@ void TestCloudFieldInterpolator::testInterpolationWeightsNearbyPointsMore() {
     QCOMPARE(field.size(), static_cast<size_t>(width * height));
 
     const double topLeft = field[0];
-    const double bottomRight =
-        field[static_cast<size_t>(width * height - 1)];
+    const double bottomRight = field[static_cast<size_t>(width * height - 1)];
 
     QVERIFY(topLeft > bottomRight);
 }
