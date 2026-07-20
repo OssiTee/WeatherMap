@@ -74,6 +74,12 @@ This project follows an MVVM architecture combined with Clean architecture princ
 
 ![Architecture](resources/architecture.png)
 
+### Architecture decisions
+- Layered design: Data -> Domain -> ViewModel -> View (plus Shared types).
+- Data layer handles external IO/parsing; domain contains app rules and transformations; viewmodels handle presentation state and async orchestration; views handle rendering only.
+- Dependency direction is one-way: UI depends on domain abstractions, domain has no UI dependency.
+- This separation improves testability, modularity, maintainability, and readability.
+
 
 ### **Domain Layer** (`include/domain/`)
 Pure business logic, no Qt dependencies.
