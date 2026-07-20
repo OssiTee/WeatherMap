@@ -137,15 +137,21 @@ Utilities and common types.
 
 ## Build and Run
 
-### Standard build
+### Recommended workflow (CMake presets)
 
 ```bash
-mkdir -p build
-cd build
-cmake ..
-cmake --build .
+cmake --preset default
+cmake --build --preset default
+ctest --preset default
 ./bin/WeatherMap
 ```
+
+This is the same preset-based flow used by CI (`cmake --preset ...`,
+`cmake --build --preset ...`, `ctest --preset ...`).
+
+Note: avoid mixing generators in the same build directory (for example,
+running manual `cmake ..` with Unix Makefiles after using Ninja presets),
+as that can cause CMake cache/generator mismatch errors.
 
 ### Using helper script
 
@@ -177,7 +183,7 @@ tests/
 ### Running tests manually
 
 ```bash
-ctest --output-on-failure
+ctest --preset default
 ```
 
 ---
