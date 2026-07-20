@@ -123,7 +123,7 @@ namespace viewmodel {
         void onWeatherFetchFinished();
 
       private:
-        std::unique_ptr<domain::IWeatherService> m_service;
+        std::shared_ptr<domain::IWeatherService> m_service;
         shared::BoundingBox m_bbox;
         bool m_hasBBox = false;
 

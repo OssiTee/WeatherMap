@@ -8,7 +8,8 @@ namespace viewmodel {
     // Construct the weather ViewModel and register async signal types.
     WeatherDataViewModel::WeatherDataViewModel(
         std::unique_ptr<domain::IWeatherService> service)
-        : m_service(std::move(service)) {
+        : m_service(std::shared_ptr<domain::IWeatherService>(
+              std::move(service))) {
 
         assert(m_service && "WeatherService must not be null");
 
@@ -81,9 +82,10 @@ namespace viewmodel {
         auto unit = m_lastRequestedUnit;
         m_inFlightUnit = unit;
         auto bbox = m_bbox;
-        auto service = m_service.get();
+        auto service = m_service;
 
-        auto future = QtConcurrent::run([service, unit, bbox, horizon]() {
+        auto future = QtConcurrent::run([service = std::move(service), unit,
+                                         bbox, horizon]() {
             return service->getWeatherForMap(horizon, bbox, unit);
         });
         m_weatherFutureWatcher.setFuture(std::move(future));
