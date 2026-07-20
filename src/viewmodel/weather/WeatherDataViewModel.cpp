@@ -79,6 +79,7 @@ namespace viewmodel {
         // thread, and the QFutureWatcher delivers the result back to the
         // main thread.
         auto unit = m_lastRequestedUnit;
+        m_inFlightUnit = unit;
         auto bbox = m_bbox;
         auto service = m_service.get();
 
@@ -111,7 +112,7 @@ namespace viewmodel {
             item.temperature = p.temperature;
             item.windSpeedMs = p.windSpeedMs;
             item.windDirectionDeg = p.windDirectionDeg;
-            item.unit = m_lastRequestedUnit;
+            item.unit = m_inFlightUnit;
             item.icon = convertSymbolCode(p.symbolCode);
 
             item.xNorm = p.xNorm;

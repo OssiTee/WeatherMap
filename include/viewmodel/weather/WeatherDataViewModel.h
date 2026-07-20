@@ -135,6 +135,8 @@ namespace viewmodel {
         shared::TemperatureUnit m_lastRequestedUnit =
             shared::TemperatureUnit::Celsius; // Unit used for most recent
                                               // request
+        shared::TemperatureUnit m_inFlightUnit =
+            shared::TemperatureUnit::Celsius; // Unit bound to active fetch
         QDateTime m_lastUpdated; // Timestamp of last successful update
         shared::ForecastHorizon m_lastHorizon = shared::ForecastHorizon::Now;
     };

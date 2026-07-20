@@ -47,7 +47,6 @@ namespace domain {
          * temperature unit conversion.
          *
          * @param horizon Forecast horizon (e.g., Now, +3h, +6h).
-         * @param horizon Forecast horizon (e.g., Now, +3h, +6h).
          * @param box Geographic map bounds used for normalization.
          * @param unit Temperature unit to apply for this request.
          * @return Result containing a vector of WeatherPoint objects on
