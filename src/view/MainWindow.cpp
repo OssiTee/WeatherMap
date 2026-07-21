@@ -120,6 +120,12 @@ namespace view {
                     m_widget->setCloudOverlayImage(image);
                 });
 
+        connect(m_cloudOverlayVM.get(),
+                &viewmodel::CloudOverlayViewModel::loadingChanged, this,
+                [this](bool loading) {
+                    m_widget->setCloudOverlayLoading(loading);
+                });
+
         connect(m_weatherVM.get(),
                 &viewmodel::WeatherDataViewModel::errorOccurred, this,
                 [this](const QString &msg) {
@@ -240,6 +246,7 @@ namespace view {
             m_cloudLayerCheck->setChecked(false);
             m_cloudLayerCheck->setEnabled(false);
             m_widget->setCloudOverlayVisible(false);
+            m_widget->setCloudOverlayLoading(false);
         } else {
             m_cloudLayerCheck->setEnabled(true);
         }

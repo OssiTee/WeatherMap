@@ -23,11 +23,9 @@ namespace {
     constexpr double GRAY_DARKEN_RANGE = 175.0;
 
     // Repository performs one WFS request per sample point.
-    // This denser grid smooths visible banding while staying responsive.
-    constexpr int COARSE_GRID_LAT_SAMPLES = 8;
-    constexpr int COARSE_GRID_LON_SAMPLES = 12;
-    constexpr int DETAILED_GRID_LAT_SAMPLES = 16;
-    constexpr int DETAILED_GRID_LON_SAMPLES = 24;
+    // Single-pass query density tuned for acceptable quality/latency balance.
+    constexpr int GRID_LAT_SAMPLES = 10;
+    constexpr int GRID_LON_SAMPLES = 14;
 
     QImage createTransparentImage(int width, int height) {
         QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
@@ -98,12 +96,9 @@ namespace {
 
 namespace viewmodel {
 
-    void CloudOverlayViewModel::startFetch(int latSamples, int lonSamples,
-                                           bool detailed) {
+    void CloudOverlayViewModel::startFetch(int latSamples, int lonSamples) {
         auto service = m_service;
         auto bbox = m_bbox;
-
-        m_loadingDetailed = detailed;
 
         auto future = QtConcurrent::run([service = std::move(service), bbox,
                                          latSamples, lonSamples]() {
@@ -147,28 +142,22 @@ namespace viewmodel {
             return;
         }
 
-        // Start with a coarse pass and refine once the first image is ready.
-        m_pendingDetailedFetch = true;
-        startFetch(COARSE_GRID_LAT_SAMPLES, COARSE_GRID_LON_SAMPLES, false);
+        emit loadingChanged(true);
+        startFetch(GRID_LAT_SAMPLES, GRID_LON_SAMPLES);
     }
 
     void CloudOverlayViewModel::onFetchFinished() {
         auto result = m_watcher.result();
 
         if (result.isError()) {
+            emit loadingChanged(false);
             emit errorOccurred(QString::fromStdString(result.errorMessage()));
             return;
         }
 
         m_cachedImage = std::move(result).value();
+        emit loadingChanged(false);
         emit overlayImageReady(m_cachedImage);
-
-        // Progressive loading: publish coarse result first, then refine.
-        if (!m_loadingDetailed && m_pendingDetailedFetch) {
-            m_pendingDetailedFetch = false;
-            startFetch(DETAILED_GRID_LAT_SAMPLES, DETAILED_GRID_LON_SAMPLES,
-                       true);
-        }
     }
 
 } // namespace viewmodel

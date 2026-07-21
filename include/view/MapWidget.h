@@ -78,6 +78,11 @@ namespace view {
         void setCloudOverlayVisible(bool visible);
 
         /**
+         * @brief Enables or disables cloud loading status text rendering.
+         */
+        void setCloudOverlayLoading(bool loading);
+
+        /**
          * @brief Sets the city label data.
          *
          * Coordinates are normalized to [0,1].
@@ -181,6 +186,7 @@ namespace view {
             m_cityLabels;
         QImage m_cloudOverlayImage;
         bool m_cloudOverlayVisible = true;
+        bool m_cloudOverlayLoading = false;
 
         double m_mapAspect = 1.0; // Current map aspect ratio (width / height)
 

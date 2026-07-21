@@ -33,6 +33,9 @@ void TestMapWidget::testSettersDoNotCrash() {
             std::vector<viewmodel::WeatherPointItem>{weatherItem});
     widget.setWeatherPoints(std::move(weatherPoints));
 
+    widget.setCloudOverlayLoading(true);
+    widget.setCloudOverlayLoading(false);
+
     QVERIFY(widget.width() >= 0);
     QVERIFY(widget.height() >= 0);
 }

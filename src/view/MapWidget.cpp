@@ -23,6 +23,9 @@ namespace {
     static constexpr int WEATHER_ICON_SIZE = 64;
     static constexpr double INITIAL_WINDOW_SCALE = 0.8;
     static constexpr qreal CLOUD_OVERLAY_OPACITY = 0.70;
+    static constexpr int CLOUD_LOADING_TEXT_MARGIN = 12;
+    static constexpr int CLOUD_LOADING_FONT_SIZE = 11;
+    static constexpr int CLOUD_LOADING_TEXT_HEIGHT = 24;
 
     QString weatherIconPath(viewmodel::WeatherIcon icon) {
         switch (icon) {
@@ -73,6 +76,11 @@ namespace view {
 
     void MapWidget::setCloudOverlayVisible(bool visible) {
         m_cloudOverlayVisible = visible;
+        update();
+    }
+
+    void MapWidget::setCloudOverlayLoading(bool loading) {
+        m_cloudOverlayLoading = loading;
         update();
     }
 
@@ -168,16 +176,32 @@ namespace view {
     }
 
     void MapWidget::drawCloudOverlay(QPainter &painter) {
-        if (!m_cloudOverlayVisible || m_cloudOverlayImage.isNull()) {
+        if (!m_cloudOverlayVisible) {
             return;
         }
 
         auto scale = computeScale();
         const QRectF targetRect(0.0, 0.0, scale.sx, scale.sy);
 
-        painter.setOpacity(CLOUD_OVERLAY_OPACITY);
-        painter.drawImage(targetRect, m_cloudOverlayImage);
-        painter.setOpacity(1.0);
+        if (!m_cloudOverlayImage.isNull()) {
+            painter.setOpacity(CLOUD_OVERLAY_OPACITY);
+            painter.drawImage(targetRect, m_cloudOverlayImage);
+            painter.setOpacity(1.0);
+        }
+
+        if (m_cloudOverlayLoading) {
+            painter.setPen(view::Colors::CityLabel());
+            painter.setFont(QFont("Arial", CLOUD_LOADING_FONT_SIZE,
+                                  QFont::Bold));
+
+            const QRect textRect(
+                CLOUD_LOADING_TEXT_MARGIN, CLOUD_LOADING_TEXT_MARGIN,
+                std::max(0, static_cast<int>(scale.sx) -
+                                2 * CLOUD_LOADING_TEXT_MARGIN),
+                CLOUD_LOADING_TEXT_HEIGHT);
+            painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
+                             "Fetching clouds...");
+        }
     }
 
     void MapWidget::drawWeatherIconsAndTemperatures(QPainter &painter) {

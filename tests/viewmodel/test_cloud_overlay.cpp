@@ -58,8 +58,7 @@ void TestCloudOverlayViewModel::testLoadSuccess() {
     vm.load();
 
     QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 1, 1000);
-    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 2, 1500);
-    QCOMPARE(stubRaw->callCount, 2);
+    QCOMPARE(stubRaw->callCount, 1);
 
     const auto args = readySpy.takeFirst();
     QVERIFY(args.size() == 1);
@@ -79,12 +78,12 @@ void TestCloudOverlayViewModel::testUsesCacheWhenNotForced() {
                         &viewmodel::CloudOverlayViewModel::overlayImageReady);
 
     vm.load();
-    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 2, 1500);
-    QCOMPARE(stubRaw->callCount, 2);
+    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 1, 1500);
+    QCOMPARE(stubRaw->callCount, 1);
 
     vm.load();
-    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 3, 500);
-    QCOMPARE(stubRaw->callCount, 2);
+    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 2, 500);
+    QCOMPARE(stubRaw->callCount, 1);
 }
 
 void TestCloudOverlayViewModel::testForceRefreshBypassesCache() {
@@ -99,13 +98,13 @@ void TestCloudOverlayViewModel::testForceRefreshBypassesCache() {
                         &viewmodel::CloudOverlayViewModel::overlayImageReady);
 
     vm.load();
-    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 2, 1500);
-    QCOMPARE(stubRaw->callCount, 2);
+    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 1, 1500);
+    QCOMPARE(stubRaw->callCount, 1);
 
     vm.load(true);
-    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 4, 2000);
+    QTRY_VERIFY_WITH_TIMEOUT(readySpy.count() >= 2, 2000);
 
-    QCOMPARE(stubRaw->callCount, 4);
+    QCOMPARE(stubRaw->callCount, 2);
 }
 
 QTEST_MAIN(TestCloudOverlayViewModel)

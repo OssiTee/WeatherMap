@@ -51,6 +51,11 @@ namespace viewmodel {
          */
         void errorOccurred(QString message);
 
+        /**
+         * @brief Emitted when cloud overlay loading starts or finishes.
+         */
+        void loadingChanged(bool loading);
+
       private slots:
         /**
          * @brief Handles completion of the asynchronous cloud fetch task.
@@ -59,21 +64,17 @@ namespace viewmodel {
 
       private:
         /**
-         * @brief Starts one asynchronous cloud fetch stage.
+         * @brief Starts one asynchronous cloud fetch.
          * @param latSamples Number of latitude samples in query grid.
          * @param lonSamples Number of longitude samples in query grid.
-         * @param detailed True for detailed pass, false for coarse pass.
          */
-        void startFetch(int latSamples, int lonSamples, bool detailed);
+        void startFetch(int latSamples, int lonSamples);
 
         std::shared_ptr<domain::ICloudCoverageService> m_service;
         shared::BoundingBox m_bbox;
         bool m_hasBBox = false;
 
         QImage m_cachedImage;
-
-        bool m_loadingDetailed = false;
-        bool m_pendingDetailedFetch = false;
 
         QFutureWatcher<shared::Result<QImage>> m_watcher;
     };
